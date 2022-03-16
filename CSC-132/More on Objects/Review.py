@@ -1,24 +1,50 @@
-class Vehicle():
-    def __init__(self, kind, owner, engine, tires):
-        self.kind = kind
-        self.owner = owner
-        self.engine = engine
-        self.tires = tires
+class Vehicle:
+    def __init__(self, name):
+        self.owner = name
+        self.engine = None
+        self.tires = None
 
-class Cars():
-    def __init__(self, owner):
-        self.owner = owner
-        Vehicle.__init__('Car', self.owner, 'True', '4')
+    def __str__(self):
+        return f"Owner: {self.owner}; Engine: {self.engine}; Tires: {self.tires}"
 
-class Trucks():
-    def __init__(self, owner):
-        self.owner = owner
-        Vehicle.__init__('Truck', self.owner, 'True', '4')
+class Car(Vehicle):
+    def __init__(self, name):
+        Vehicle.__init__(self, name)
+        self.engine = True
+        self.tires = 4
+    
+    def __str__(self):
+        return f"Type: Car; {super().__str__()}"
 
-class Cycles():
-    def __init__(self, owner, type, engine):
-        self.owner = owner
-        self.type = type
-        self.engine = engine
-        Vehicle.__init__(self.type, self.owner, self.engine, '2')
- 
+class Truck(Vehicle):
+    def __init__(self, name):
+        Vehicle.__init__(self, name)
+        self.engine = True
+        self.tires = 4
+    
+    def __str__(self):
+        return f"Type: Truck; {super().__str__()}"
+
+class Cycle(Vehicle):
+    def __init__(self, name):
+        Vehicle.__init__(self, name)
+        self.tires = 2
+    
+    def __str__(self):
+        return f"{super().__str__()}"
+
+class Bicycle(Cycle):
+    def __init__(self, name):
+        Cycle.__init__(self, name)
+        self.engine = False
+    
+    def __str__(self):
+        return f"Type: Bicycle; {super().__str__()}"
+
+class Motorcycle(Cycle):
+    def __init__(self, name):
+        Cycle.__init__(self, name)
+        self.engine = True
+    
+    def __str__(self):
+        return f"Type: Motorcycle; {super().__str__()}"
