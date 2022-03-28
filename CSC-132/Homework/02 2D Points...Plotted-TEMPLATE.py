@@ -7,9 +7,6 @@
 from tkinter import *
 from math import sqrt
 from random import randint
-from turtle import color
-
-from matplotlib.pyplot import fill
 
 # the 2D point class
 class Point:
