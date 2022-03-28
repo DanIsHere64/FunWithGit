@@ -7,9 +7,6 @@
 from tkinter import *
 from math import sqrt
 from random import randint
-from turtle import color
-
-from matplotlib.pyplot import fill
 
 # the 2D point class
 class Point:
@@ -29,15 +26,19 @@ class Point:
 # the coordinate system class: (0,0) is in the top-left corner
 # inherits from the Canvas class of Tkinter
 class CoordinateSystem(Canvas):
-	def __init__(self, master):
-		self.master = master
-		self.coordSystem = Canvas(self.master, bg="BLUE", height=800, width=800)
+    def __init__(self, master):
+        self.master = master
+        self.coordSystem = Canvas(self.master, height=800, width=800)
+        self.coordSystem.pack()
 
-	def plotPoints(self, num):
-		colors = ["RED", "BLUE", "YELLOW"]
-		for i in range(num + 1):
-			w = Point(randint(0, 799), randint(0, 799))
-			oval = self.coordSystem.create_oval(w.x,w.y,w.x+1,w.y+1, fill=colors[randint(0,2)])
+    def plotPoints(self, num):
+        hexVals = ["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F"]
+        rgb = hexVals[randint(0,15)] + hexVals[randint(0,15)] + hexVals[randint(0,15)] + hexVals[randint(0,15)] + hexVals[randint(0,15)] + hexVals[randint(0,15)]
+        for i in range(num + 1):
+            w = Point(randint(0, 799), randint(0, 799))
+            oval = self.coordSystem.create_oval(w.x,w.y,w.x+1,w.y+1, fill=f"#{rgb}")
+            
+
 
 
 
