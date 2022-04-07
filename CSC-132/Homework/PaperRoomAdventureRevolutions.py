@@ -11,7 +11,7 @@ HEIGHT = 600
 
 # Classes
 class Room:
-
+    
     def __init__(self, name, image):
         self.name = name
         self.image = image
@@ -75,7 +75,8 @@ class Room:
 
     def __str__(self):
         result = f"You are in {self.name}\n"
-        result += "You see:"
+
+        result += "You see: "
         for item in self.items.keys():
             result += item + " "
         result += "\n"
@@ -84,18 +85,22 @@ class Room:
         for exit in self.exits.keys():
             result += exit + " "
         result += "\n"
+        
+        return result
 
 
 class Game(Frame):
 
     EXIT_ACTIONS = ["quit", "exit", "bye", "adios"]
-    STATUS_DEFAULT = "I don't understand. Try a noun. Valid verbs are go, look, and take."
+    STATUS_DEFAULT ="I don't understand. Try verb noun. Valid verbs are go, look, take."
     STATUS_DEAD = "You are dead."
-    STATUS_BAD_EXIT = "Invalid exit."
-    STATUS_ROOM_CHANGE = "Room changed."
-    STATUS_GRABBED = "Item grabbed."
+    STATUS_BAD_EXIT = "Invalid Exit"
+    STATUS_ROOM_CHANGE = "Room Changed."
+    STATUS_GRABBED = "Item Grabbed."
     STATUS_BAD_GRABBABLE = "I can't grab that."
     STATUS_BAD_ITEM = "I don't see that."
+    STATUS_ITEM_USED = "Item used."
+    STATUS_BAD_USE = "I can't use that."
 
     def __init__(self, parent):
         self.inventory = []
@@ -121,25 +126,27 @@ class Game(Frame):
 
         r4.add_exit("north", r2)
         r4.add_exit("west", r3)
-        r4.add_exit("south", None)
+        r4.add_exit("south", None)  # None for death
 
-        # handle the items
+        # handle items
         r1.add_item("chair", "It is made of wicker and no one is sitting on it.")
-        r1.add_item("bigger_chair", "It is made of even more wicker and no one is sitting on it. But, there is a key on it!")
+        r1.add_item("bigger_chair", "It is made of even more wicker and no one is sitting on it. But there is a key on it")
 
         r2.add_item("fireplace", "It is made of fire and fire is sitting on it. Grab some fire and bring it with you.")
-        r2.add_item("chairs", "They are made of more wicker and no one is sitting on any of them. This might be a fire hazard... Is this a chair factory?")
-
+        r2.add_item("chairs", "They are made of more wicker and no one is sitting on all of them. \
+                                This might be a fire hazard. Is this a chair factory?")
+        
         r3.add_item("desk", "It is made of wicker and no one is sitting on it.")
-        r3.add_item("chair", "Yep, another.")
-        r3.add_item("dimmsdale_dimmadome", "Owned by Doug Dimmadome, owner of the Dimmsdale Dimmadome. That's right!")
-
-        r4.add_item("croissant", "It is made of butter and no one is sitting on it. There is an extra stick of butter sitting next to it.")
+        r3.add_item("chair", "Yep. Another.")
+        r3.add_item("dimsdale_dimmadome", "Owned by Doug Dimmadome, owner of the Dimsdale Dimmadome. That's right!")
+        
+        r4.add_item("croissant", "It is made of butter and no one is sitting on it. There is an extra stick of butter.")
+        r4.add_item("russian_nesting_chair", "It is made out of less wicker and no one is sitting on it. There is also a lock on it")
 
         # handle grabbables
         r1.add_grabbable("key")
         r2.add_grabbable("fire")
-        r3.add_grabbable("Doug")
+        r3.add_grabbable("doug")
         r4.add_grabbable("butter")
 
         # set the current room
@@ -147,17 +154,17 @@ class Game(Frame):
 
     def setup_gui(self):
         # input element
-        self.player_input = Entry(self, bg="WHITE")
+        self.player_input = Entry(self, bg="white")
         self.player_input.bind("<Return>", self.process)
         self.player_input.pack(side=BOTTOM, fill=X)
-        self.player_input.focus()
+        self.player_input.focus()       # sets input field to have cursor inside of it
 
         # the image element
         img = None
         self.image_container = Label(self, width=WIDTH // 2, image=img)
-        self.image_container.image = img
+        self.image_container.image = img 
         self.image_container.pack(side=LEFT, fill=Y)
-        self.image_container.pack_propagate(False) # prevents image from changing window size
+        self.image_container.pack_propagate(False) # prevents the image from controlling the size of the window
 
         # the text/status element
         text_container = Frame(self, width=WIDTH // 2)
@@ -166,17 +173,30 @@ class Game(Frame):
         text_container.pack(side=RIGHT, fill=Y)
         text_container.pack_propagate(False)
 
+
     def set_room_image(self):
         if self.current_room == None:
-            img = PhotoImage(file="Skull.gif")
+            img = PhotoImage(file="skull.gif")
         else:
             img = PhotoImage(file=self.current_room.image)
 
         self.image_container.config(image=img)
         self.image_container.image = img
 
+
     def set_status(self, status):
-        pass
+        self.text.config(state=NORMAL)  # makes the text editable
+        self.text.delete(1.0, END)  # deletes the characters from 1st spot to the end
+
+        if self.current_room == None:
+            self.text.insert(END, Game.STATUS_DEAD)
+        
+        else:
+            content = f"{self.current_room}\nYou are carrying: {self.inventory}\n\n{status}"
+            self.text.insert(END, content)
+        
+        self.text.config(state=DISABLED)
+
 
     def play(self):
         self.create_rooms()
@@ -185,7 +205,77 @@ class Game(Frame):
         self.set_status("")
 
     def process(self, event):
-        pass
+        action = self.player_input.get() 
+        action = action.lower()
+
+        if action in Game.EXIT_ACTIONS:
+            exit()
+        
+        if self.current_room == None:
+            self.player_input.delete(0, END)
+            return
+        
+        words = action.split()
+
+        if len(words) != 2:
+            self.set_status(Game.STATUS_DEFAULT)
+            return
+        
+        self.player_input.delete(0, END)
+
+        verb = words[0]
+        noun = words[1]
+
+        if verb == "go":
+            status = Game.STATUS_BAD_EXIT
+
+            if noun in self.current_room.exits:
+                self.current_room = self.current_room.exits[noun]
+                status = Game.STATUS_ROOM_CHANGE
+
+            self.set_status(status)
+            self.set_room_image()
+            return
+
+        if verb == "look":
+            status = Game.STATUS_BAD_ITEM
+
+            if noun in self.current_room.items: # items is a dictionary
+                status = self.current_room.items[noun]
+
+            self.set_status(status)
+            return 
+
+        if verb == "take":
+            status = Game.STATUS_BAD_GRABBABLE
+
+            if noun in self.current_room.grabbables: # grabbables is a list
+                self.inventory.append(noun)
+                self.current_room.del_grabbable(noun)
+                if noun == "tiny_chair":
+                    self.current_room.items["russian_nesting_chair"] = "The chair is open, but the tiny chair is gone from the inside."
+                if "butter" in self.inventory and "fire" in self.inventory:
+                    self.inventory.remove("butter")
+                    self.inventory.append("melted_butter")
+                status = Game.STATUS_GRABBED
+
+            self.set_status(status)
+            return
+
+        if verb == "use":
+            status = Game.STATUS_BAD_USE
+
+            if noun == "key" and self.current_room.name == "Room 4":
+                self.inventory.remove("key")
+                self.current_room.items["russian_nesting_chair"] = "The chair is now open and reveals a smaller chair inside. This is made with even less wicker and can fit in your pocket."
+                self.current_room.add_grabbable("tiny_chair")
+                status = Game.STATUS_ITEM_USED
+
+            self.set_status(status)
+            return
+
+        
+
 
 # Main Part
 
