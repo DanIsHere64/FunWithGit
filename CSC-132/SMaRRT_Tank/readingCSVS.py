@@ -1,13 +1,15 @@
-import csv
+import pandas as pd
 
-with open('data.txt') as csv_file:
-    csv_reader = csv.reader(csv_file, delimiter=',')
-    line_count = 0
-    for row in csv_reader:
-        if line_count == 0:
-            print(f'Column names are {", ".join(row)}')
-            line_count += 1
-        else:
-            print(f'\t The time is{row[0]}. The temperature is {row[1]} with a salinithy of {row[2]} and a pH of {row[3]}.')
-            line_count += 1
-    print(f'Processed {line_count} lines.')
+livePath = "/Users/cosmi/Documents/Code/FunWithGit/CSC-132/SMaRRT_Tank/liveData.csv"
+liveData = pd.read_csv(livePath, encoding='utf-8')
+historicPath = "/Users/cosmi/Documents/Code/FunWithGit/CSC-132/SMaRRT_Tank/historicalData.csv"
+historicData = pd.read_csv(historicPath, encoding='utf-8')
+hourlyPath = "/Users/cosmi/Documents/Code/FunWithGit/CSC-132/SMaRRT_Tank/hourlyData.csv"
+hourlyData = pd.read_csv(hourlyPath, encoding='utf-8')
+dailyPath = "/Users/cosmi/Documents/Code/FunWithGit/CSC-132/SMaRRT_Tank/dailyData.csv"
+dailyData = pd.read_csv(dailyPath, encoding='utf-8')
+
+print(f"This is the live data:\n{liveData}")
+print(f"This is the historical data:\n{historicData}")
+print(f"This is the hourly data:\n{hourlyData}")
+print(f"This is the daily data:\n{dailyData}")
