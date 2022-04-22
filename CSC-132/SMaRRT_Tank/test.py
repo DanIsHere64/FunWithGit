@@ -1,36 +1,26 @@
 import time
 import serial
 import pandas as pd
+from math import trunc
+from math import remainder
 
-day = time.ctime()
-day = day.split()
-weekday, month, date, year = day[0], day[1], day[2], day[4]
-arduino = serial.Serial(port='COM3', baudrate=9600, timeout=.1)
+liveData = pd.read_csv("liveData.csv")
 
-def getTime():
-    t = time.ctime()
-    t = t.split()
-    t = t[3]
-    return t
-
-arduino.reset_input_buffer()
-
-dailyData = {
-    "timeStamp": [],
+historicData = {
+    "day": [],
+    "time": [],
     "temp": [],
-    "sal": [],
+    "salinity": [],
     "pH": []
 }
 
-while True:
-    TimeOfRecord = {}
-    if arduino.in_waiting > 0:
-        data = arduino.readline().decode('utf-8').rstrip()
-        temp, sal, pH = data.split(",")
-        current_time = getTime()
+for i in range(0, 120):
+    historicData['day'].append(liveData.iloc[i*6,0])
+    historicData['time'].append(liveData.iloc[i*6,1])
+    historicData['temp'].append(trunc(liveData.iloc[i*6:(i+1)*6,2].mean()))
+    historicData['salinity'].append(trunc(liveData.iloc[i*6:(i+1)*6,3].mean()))
+    historicData['pH'].append(liveData.iloc[i*6:(i+1)*6,4].mean()-remainder(liveData.iloc[i*6:(i+1)*6,4].mean(), 0.01))
 
-        dailyData["timeStamp"].append(current_time)
-        dailyData["temp"].append(temp)
-        dailyData["sal"].append(sal)
-        dailyData["pH"].append(pH)
-        print(dailyData)
+dataFrame = pd.DataFrame(historicData)
+print(dataFrame)
+dataFrame.to_csv('historicalData.csv')

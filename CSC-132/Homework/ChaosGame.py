@@ -11,7 +11,7 @@ from math import sqrt
 # constants
 WIDTH = 600
 HEIGHT = 520
-POINT_COLORS = ["black", "red", "green", "blue"]
+POINT_COLORS = ["black", "green", "blue", "orange", "yellow", "purple"]
 NUM_POINTS = 50000
 MAX_Y = 510
 MIN_Y = 10
@@ -91,7 +91,7 @@ class ChaosGame(Canvas):
     def plot_point(self, point, rad=0, color=NONE):
         if color == NONE:
             color = choice(POINT_COLORS)
-        self.create_oval(point.x - rad, point.y - rad, point.x + rad, point.y + rad, outline=color, fill=color)
+        self.create_oval(point.x - rad, point.y - rad, point.x + rad, point.y + rad, fill=color)
 
 # main program
 
