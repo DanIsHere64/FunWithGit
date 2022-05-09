@@ -1,26 +1,39 @@
 import time
 import serial
 import pandas as pd
-from math import trunc
-from math import remainder
+from math import *
+from random import *
 
-liveData = pd.read_csv("liveData.csv")
+liveData = pd.read_csv("liveData.csv", encoding='utf-8')
 
-historicData = {
-    "day": [],
-    "time": [],
+liveData['unixTime'] = liveData['unixTime'].astype(int)
+liveData['temp'] = liveData['temp'].astype(float)
+liveData['sal'] = liveData['sal'].astype(int)
+liveData['pH'] = liveData['pH'].astype(float)
+liveData = liveData.set_index('unixTime', drop=False)
+
+df = {
+    "unixTime": [],
     "temp": [],
-    "salinity": [],
+    "sal": [],
     "pH": []
 }
+df = pd.DataFrame(df)
 
-for i in range(0, 120):
-    historicData['day'].append(liveData.iloc[i*6,0])
-    historicData['time'].append(liveData.iloc[i*6,1])
-    historicData['temp'].append(trunc(liveData.iloc[i*6:(i+1)*6,2].mean()))
-    historicData['salinity'].append(trunc(liveData.iloc[i*6:(i+1)*6,3].mean()))
-    historicData['pH'].append(liveData.iloc[i*6:(i+1)*6,4].mean()-remainder(liveData.iloc[i*6:(i+1)*6,4].mean(), 0.01))
+earliestTime = liveData.iloc[0,0]
 
-dataFrame = pd.DataFrame(historicData)
-print(dataFrame)
-dataFrame.to_csv('historicalData.csv')
+for i in range(24):
+    stuff = {
+        "unixTime": [earliestTime + i * 3600],
+        "temp": [round(liveData.loc[earliestTime + i * 3600:(earliestTime + (i + 1) * 3600) - 5, 'temp'].mean(), 1)],
+        "sal": [round(liveData.loc[earliestTime + i * 3600:(earliestTime + (i + 1) * 3600) - 5, 'sal'].mean())],
+        "pH": [round(liveData.loc[earliestTime + i * 3600:(earliestTime + (i + 1) * 3600) - 5, 'pH'].mean(), 2)]
+    }
+    data = pd.DataFrame(stuff)
+    df = pd.concat([df, data], ignore_index=True)
+
+df = df.set_index('unixTime')
+
+
+print(df)
+#df.to_csv('hourlyData.csv', index=True)
